@@ -310,6 +310,55 @@ INSERT INTO staff (name, role, subject, type) VALUES
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# ── Admin seed achievements ────────────────────
+@app.route('/admin/seed-achievements', methods=['POST'])
+def seed_achievements():
+    data = request.get_json()
+    if not data or data.get('secret') != 'seed2024':
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        db.session.execute(text("DELETE FROM achievement_members"))
+        db.session.execute(text("DELETE FROM achievements"))
+        db.session.execute(text("ALTER TABLE achievements AUTO_INCREMENT = 1"))
+        db.session.commit()
+        achievements_data = [
+            ('Monolog','Bulan Bahasa',2021,'🥉'),('Sumpah Pemuda','Bulan Bahasa',2021,'🥉'),('Puisi','Bulan Bahasa',2021,'🏅'),
+            ('Debat','Bulan Bahasa',2021,'🥇'),('Duta Bahasa','Bulan Bahasa',2021,'🥈'),('Tari Kreasi','Pentas Seni',2021,'🎭'),
+            ('Paduan Suara','Pentas Seni',2021,'🥇'),('Vocal','Pentas Seni',2021,'🎤'),('Modern Dance','Pentas Seni',2021,'💃'),
+            ('Dance Challenge','Pentas Seni',2021,'🥇'),('Bazzar','Pentas Seni',2021,'🥇'),('Futsal','Class Meeting',2021,'⚽'),
+            ('Voly','Class Meeting',2021,'🏐'),('Tenis Meja','Class Meeting',2021,'🏓'),('Duta Bahasa','Bulan Bahasa',2022,'🥈'),
+            ('Debat','Bulan Bahasa',2022,'🥇'),('Monolog','Bulan Bahasa',2022,'🥉'),('Puisi','Bulan Bahasa',2022,'🏅'),
+            ('Stand Up Comedy','Bulan Bahasa',2022,'🥇'),('Tari Kreasi','Pentas Seni',2022,'🎭'),('Dance Modern','Pentas Seni',2022,'💃'),
+            ('Dance Challenge','Pentas Seni',2022,'🥇'),('Vocal Putra','Pentas Seni',2022,'🎤'),('Vocal Putri','Pentas Seni',2022,'🎤'),
+            ('Music Kreasi','Pentas Seni',2022,'🎵'),('Bazzar','Pentas Seni',2022,'🥇'),('Teacher Cover','Hari Guru',2022,'🏅'),
+            ('Futsal Cup Smania','Futsal Cup',2023,'🎖️'),
+        ]
+        for title, category, year, icon in achievements_data:
+            a = Achievement(title=title, category=category, year=year, icon=icon)
+            db.session.add(a)
+        db.session.commit()
+        members_data = {
+            1:['Rahayu Abadiah'],2:['Sumitra'],3:['Imas Masruroh'],4:['Erlangga','Rianti','Hidayati'],5:['Sumitra'],
+            6:['Erlangga','Mitra','Rianti','Hildayanti'],7:['Seluruh Anggota Kelas'],8:['Sumitra','Dewi Kusumawati'],
+            9:['Mila Anggelina','Rahayu Abadiah'],10:['Gilang','Fahrurozi','Dimas','Irfan','Arya','Danu','Erlangga','Rizki','Virdiansyah','Sumitra','Bima','Waseh'],
+            11:['Naftalia','Imas','Rendi','Ridwan'],12:['Ridwan','Irfan','Gilang','Waseh','Bima','Fahru','Dimas','Arya','Amin'],
+            13:['Anisa','Erusmiati','Hildayanti','Dini','Mila','Rahayu','Sindi'],14:['Dewi Kusumawati','Aminuddin'],15:['Sumitra'],
+            16:['Erlangga','Dewi Kusumawati','Arya Pratama'],17:['Rahayu Abadiah'],18:['Imas Masruroh'],19:['Aminuddin'],
+            20:['Anisa','Erusmiati','Mila','Rahayu','Sindi','Imas'],21:['Mila Anggelina','Rahayu Abadiah'],
+            22:['Erlangga','Arya','Hikmal','Danu','Waseh','Haikal','Sumitra'],23:['Sumitra'],24:['Dewi Kusumawati'],
+            25:['Aminuddin','Fahrurozi','Dimas','Gilang','Arya','Irfan'],26:['Naftalia','Solehah','Dini','Rendi','Febriansyah'],
+            27:['Erlangga','Dewi Kusumawati'],28:['Arya','Aminuddin','Waseh','Irfan','Fahrurozi','Dimas','Gilang','Febriansyah'],
+        }
+        for aid, members in members_data.items():
+            for member in members:
+                am = AchievementMember(achievement_id=aid, member_name=member)
+                db.session.add(am)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'{len(achievements_data)} prestasi & {sum(len(m) for m in members_data.values())} anggota ditambahkan.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # ══════════════════════════════════════════════
 #  JALANKAN
 # ══════════════════════════════════════════════
